@@ -54,26 +54,87 @@ table {
 body {
   background-color: #111;
   color: #fafad2;
-  padding: 2em;
+  padding: 1em;
+  text-align: center;
 }
 
 h1 {
   font-size: 2em;
+  margin: 1.5em;
+}
+
+#text-input {
+  width: 25%;
+  margin: 0.5em 0;
+  border-style: none;
+  background-color: rgba(255,255,240,0.8);
+  color: #111;
+  font-family: sans-serif;
+  font-weight: bold;
+  padding: 4px;
+  font-size: 120%;
+  text-align: center;
+}
+
+#singif {
+  margin: 0.5em;
+  color: #111;
+  background-color: #fafad2;
+  font-size: 110%;
+  border: none;
+  padding: 5px 8px;
+  cursor: pointer;
+  font-family: sans-serif;
+  text-transform: uppercase;
+}
+#singif:hover {
+  color: firebrick;
+}
+#singif:active, #singif.pressed {
+  background-color: firebrick;
+  color: #111;
+}
+#singif.pressed {
+  cursor: default;
+}
+
+#drivein {
+  display: none;
+  margin: auto;
 }
 
 #yt {
   width: 320px;
   height: 240px;
-  background-color: black;
-  color: #AAA;
+  background-color: pink;
+  color: #222;
   text-align: center;
   line-height: 4em;
+  margin: auto;
 }
 
-#drivein {
+#gifs, #lines {
   position: relative;
+  width: 640px;
+  height: 480px;
 }
 
-#drivein img {
+#gifs .gif {
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
   position: absolute;
+  top: 0;
+  left: 0;
+}
+
+#lines .line {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(20,20,20,0.75);
+  color: ivory;
 }

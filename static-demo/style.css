@@ -69,3 +69,11 @@ h1 {
   text-align: center;
   line-height: 4em;
 }
+
+#drivein {
+  position: relative;
+}
+
+#drivein img {
+  position: absolute;
+}

@@ -3,4 +3,6 @@ Jinja2==2.7.1
 MarkupSafe==0.18
 Werkzeug==0.9.4
 itsdangerous==0.23
+simplejson==3.3.0
+uWSGI==1.9.17.1
 wsgiref==0.1.2

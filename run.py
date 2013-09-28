@@ -13,7 +13,7 @@ def singif_api():
     json_response = simplejson.dumps(sample_response)
     resp = Response(json_response, status=200, mimetype='application/json')
     resp.headers['X-Creator'] =  "W.A.S.T.E"
-
+    resp.headers['Access-Control-Allow-Origin'] = "*"
     return resp
 
 if __name__ == "__main__":

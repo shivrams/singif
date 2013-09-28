@@ -20,30 +20,42 @@ $(function() { // upon DOM having loaded
 function singif(cb) {
 
   // reset containers in case we've already played something
-  $("#gifs").html("<div class='gif'></div>");
+  $("#gifs").html("<div class='gif'></div><div class='lyric'></div>"); // dummies to make JS easier
   // also reset #yt
 
   // set loading icon
   
-  getSingifDummy("some paramters", function getSingifCB(resp){
+  getSingif("some parameters", function getSingifCB(resp){
     if (resp.status != 200) {
       console.error("Something broke. Status code " + resp.status + ": " + resp.mesg);
     }
     else {
+      // schedule gifs
       resp.gifs.forEach(function(gif, i) {
         window.setTimeout(function() {
           $("#gifs").append("<div class='gif' style='background-image: url(" + gif.url + "); display: none;'></div>");
           $($("#gifs .gif")[1]).fadeIn(TRANSITION);
-          $($("#gifs .gif")[0]).fadeOut(250, function() {
+          $($("#gifs .gif")[0]).fadeOut(TRANSITION, function() {
             $(this).remove();
           });
         }, gif.ts*250);
-
-        // and for when we're done:
-        window.setTimeout(function() {
-          cb();
-        }, resp.meta.length*1000);
       });
+
+      // schedule lyrics
+      resp.lines.forEach(function(line, i) {
+        window.setTimeout(function() {
+          $("#gifs").append("<div class='lyric'>" + line.text + "</div>");
+          $($("#gifs .lyric")[1]).fadeIn(TRANSITION);
+          $($("#gifs .lyric")[0]).fadeOut(TRANSITION, function() {
+            $(this).remove();
+          });
+        }, line.ts*250);
+      });
+
+      // and for when we're done:
+      window.setTimeout(function() {
+        cb();
+      }, resp.meta.length*250);
     }
   }); // end getSingif()
 }

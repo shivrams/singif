@@ -60,7 +60,7 @@ body {
 
 h1 {
   font-size: 2em;
-  margin: 1.5em;
+  margin: 1em;
 }
 
 #text-input {
@@ -113,7 +113,7 @@ h1 {
   margin: auto;
 }
 
-#gifs, #lines {
+#gifs {
   position: relative;
   width: 640px;
   height: 480px;
@@ -130,11 +130,16 @@ h1 {
   left: 0;
 }
 
-#lines .line {
+#gifs .lyric {
+  text-align: center;
+  font-size: 150%;
   position: absolute;
-  width: 100%;
-  bottom: 0;
+  width: 90%;
+  bottom: 6%;
   left: 0;
   background-color: rgba(20,20,20,0.75);
   color: ivory;
+  z-index: 10;
+  padding: 3% 5%;
+  display: none;
 }

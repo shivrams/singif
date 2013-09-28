@@ -1,5 +1,6 @@
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask import Flask, render_template, send_from_directory
+import os
 
 frontend_app = Flask(__name__)
 backend_app = Flask(__name__)

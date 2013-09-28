@@ -11,10 +11,12 @@ else:
     DEBUG = True
 
 CSRF_ENABLED = True
-CSRF_SESSION_KEY = "Wa$t3Be1//Gpr0ducli\/3"
+
+CSRF_SESSION_KEY = os.environ.get('FLASK_CSRF_SESSION_KEY','defaultkey')
 
 THREADS_PER_PAGE = 8
 ADMINS = frozenset(['live2bshiv@gmail.com', 'tobyfox@gmail.com'])
+SECRET_KEY = os.environ.get('FLASK_SECRET_KEY', 'defaultsecret')
 
 
 #DB config
@@ -25,8 +27,3 @@ if SINGIF_IS_LIVE:
 
 DATABASE_PATH = os.path.join(_basedir, DATABASE)
 SQLALCHEMY_DATABASE_URI = 'sqlite:///' + DATABASE_PATH
-
-#API Keys
-GIPHY_API_KEY = "dc6zaTOxFJmzC"
-TUNEWIKI_API_KEY = ""
-METROLYRICS_API_KEY = "1234567890123456789012345678901234567890"

@@ -63,7 +63,7 @@ h1 {
   margin: 1em;
 }
 
-#text-input {
+#query {
   width: 25%;
   margin: 0.5em 0;
   border-style: none;
@@ -106,10 +106,7 @@ h1 {
 #yt {
   width: 320px;
   height: 240px;
-  background-color: pink;
-  color: #222;
   text-align: center;
-  line-height: 4em;
   margin: auto;
 }
 

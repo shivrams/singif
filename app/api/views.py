@@ -17,6 +17,7 @@ def ping():
 @mod.route('/api/v1/singif')
 def singif_api():
     provided_song_name = request.args.get("song_name", "")
+    provided_lyrics = request.args.get("song_lyrics", "")
     if not provided_song_name:
         json_response = simplejson.dumps(sample_response)
     else:
@@ -56,7 +57,11 @@ def singif_api():
         song_meta['embed_type'] = 'youtube'
         song_meta['id'] = 'hroUeu4IvpE'
         song_meta['internal_id'] = 'test'
-        full_song_lyrics = song_lyrics_meta.get('lyrics')
+        if not provided_lyrics:
+            full_song_lyrics = song_lyrics_meta.get('lyrics')
+        else:
+            full_song_lyrics = provided_lyrics
+
         individual_lyrics = LyricParser.get_lyric_lines(full_song_lyrics)
         current_timestamp = 0
         for lyric in individual_lyrics:

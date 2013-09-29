@@ -9,7 +9,11 @@ class Giphy(object):
         self.api_key = api_key or GIPHY_API_KEY
         self.search_by_keyword_endpoint = "http://api.giphy.com/v1/gifs/search"
 
-    def get_gifs_by_keyword(self, keyword, offset=0, count=40):
+    def get_gifs_by_keyword(self, keyword, offset=0, count=40, dont_parse=False):
+        if not dont_parse:
+            #Pick the most gif friendly keyword available
+            keyword = LyricParser.get_keyword(keyword)
+
         params = {'api_key': self.api_key}
         params['q'] = keyword
         params['limit'] = count

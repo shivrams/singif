@@ -33,8 +33,8 @@ class LyricParser(object):
         return final_lines
 
     @classmethod
-    def get_keywords(cls, lyric):
-        pass
+    def get_keyword(cls, lyric):
+        return lyric
 
     @classmethod
     def estimate_duration(cls, lyric):

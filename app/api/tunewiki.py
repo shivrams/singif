@@ -48,7 +48,7 @@ class MetroLyrics(object):
         return song_details
 
     def get_song_lyrics_by_name(self, song_name, artist_name=None):
-        song_lyrics = ''
+        song_lyrics = {}
         search_results = self.get_search_results(song_name, artist_name)
         #Fetch the first search result with lyrics and get those lyrics
         chosen_result = {}

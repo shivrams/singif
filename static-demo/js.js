@@ -3,6 +3,8 @@
 var TRANSITION = 250;
 var SINGIF_API_URL = "http://api.singif.com/api/v1/singif";
 var debug = true;
+var timers = []; // array of timeouts (see Timer function below) each corresponding to a gif, so we can pause
+var timersPlaying = false;
 
 var EUGENE = "Studies have shown that we like sheep are prone \nTo sure fatal doses of malcontent through osmosis \nBut don't be sympathetic, just pass the anaesthetic \n'Cuz sheep are benign and on the young we will dine \nBurn her pale blue shroud, and tread on her bones \nThe din of the boys club crowd, reveals we've always been clones \nOh this being true you know there's more than just two \nIn the cards are four aces so turn and shoot at twelve paces \nStudies have shown that we like sheep are prone \nTo sure fatal doses of malcontent through osmosis \nBut don't be sympathetic, just pass the antisthetic \n'Cuz sheep are benign and on the young we will dine \nBurn her pale blue shroud, and tread on her bones \nThe din of the boys club crowd, reveals we've always been clones \nOh this being true you know there's more than just two \nSo tie up your laces for the gene pool race of races;"
 
@@ -35,6 +37,7 @@ function singif(cb) {
   // reset containers in case we've already played something
   $("#gifs").html("<div class='gif'></div><div class='lyric'></div>"); // dummies to make JS easier
   // also reset #yt
+  timers = [] // clear timers
 
   // set loading icon
   
@@ -49,9 +52,9 @@ function singif(cb) {
       $("#message").html(errorMessage).fadeIn(TRANSITION);
       cb(); // unhides search bar etc
     }
-    
+
     else {
-      singifDfd.resolve(resp, cb); // resolve this - YT player will start to load and then playSingif() will be called
+      singifDfd.resolve(resp, cb); // resolve this - YT player will start to load and then setupSingifTimers() will be called
 
       // TODO: start buffering gifs
     }
@@ -114,9 +117,9 @@ $.when(singifDfd, loadYouTubeAPI()).done(function(singifArgs) {
 
   // API calls this when the video player is ready.
   function onPlayerReady(event) {
-    if (debug) console.log("YT player ready, playing");
-    event.target.playVideo();
-    playSingif(resp);
+    if (debug) console.log("YT player ready");
+    setupSingifTimers(resp);
+    event.target.playVideo(); // autostart playing
   }
 
   // API calls this function when the player's state changes.
@@ -125,32 +128,78 @@ $.when(singifDfd, loadYouTubeAPI()).done(function(singifArgs) {
       if (debug) console.log("singif finished, calling callback");
       cb();
     }
+    else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.BUFFERING) {
+      if (debug) console.log("YT player paused or buffering");
+      pauseTimers();
+    }
+    else if (event.data == YT.PlayerState.PLAYING) {
+      if (debug) console.log("YT player playing");
+      resumeTimers();
+    }
   }
 
 });
 
-function playSingif(resp) {
-  if (debug) console.log("starting to play singif");
+// ========== TIMING STUFF ========== //
+
+function setupSingifTimers(resp) {
+  if (debug) console.log("scheduling singif timers");
 
   // schedule gifs
   resp.gifs.forEach(function(gif, i) {
-    window.setTimeout(function() {
+    timers.push(new Timer(function() {
       $("#gifs").append("<div class='gif' style='background-image: url(" + gif.url + "); display: none;'></div>");
       $($("#gifs .gif")[1]).fadeIn(TRANSITION);
       $($("#gifs .gif")[0]).fadeOut(TRANSITION, function() {
         $(this).remove();
       });
-    }, gif.ts*1000);
+    }, gif.ts*1000));
   });
 
   // schedule lyrics
   resp.lines.forEach(function(line, i) {
-    window.setTimeout(function() {
+    timers.push(new Timer(function() {
       $("#gifs").append("<div class='lyric'>" + line.text + "</div>");
       $($("#gifs .lyric")[1]).fadeIn(TRANSITION);
       $($("#gifs .lyric")[0]).fadeOut(TRANSITION, function() {
         $(this).remove();
       });
-    }, line.ts*1000);
+    }, line.ts*1000));
   });
+}
+
+
+function pauseTimers() {
+  if (!timersPlaying) return;
+  if (debug) console.log("Pausing singif timers");
+  timers.forEach(function(timer) {
+    timer.pause();
+  });
+  timersPlaying = false;
+}
+function resumeTimers() {
+  if (timersPlaying) return;
+  if (debug) console.log("Resuming singif timers");
+  timers.forEach(function(timer) {
+    timer.resume();
+  });
+  timersPlaying = true;
+}
+
+// wrapper for window.setTimeout() that we can pause and resume
+// http://stackoverflow.com/a/3969760/458614
+function Timer(callback, delay) {
+    var timerId, start, remaining = delay;
+
+    this.pause = function() {
+        window.clearTimeout(timerId);
+        remaining -= new Date() - start;
+    };
+
+    this.resume = function() {
+        start = new Date();
+        timerId = window.setTimeout(callback, remaining);
+    };
+
+    // this.resume(); // let's actually not start them automatically
 }

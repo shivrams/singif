@@ -14,35 +14,59 @@ var player; // global variable for YouTube player
 var singifDfd = $.Deferred(); // resolves when user starts a singif and we receive singif JSON
 var youtubeDfd = $.Deferred(); // resolves when YT API is ready
 
+
+// ========== SINGIF INTERFACE LOGIC ========== //
+
 $(function() { // upon DOM having loaded
-  $("#singif-go").click(function() {
-    var button = $(this);
-    if (button.hasClass("pressed")) return;
-    button.addClass("pressed"); // to avoid a flicker when you let go
-    $("#input").delay(TRANSITION/2).animate({ opacity: 0 }, TRANSITION);
-    $("#message").delay(TRANSITION/2).fadeOut(TRANSITION); // hide any error message
-    $("#singif").css({display: "inline-block"});
-    singif(function singifCB() {
-      // when singif is done playing
-      button.removeClass("pressed");
-      button.html("let's do it again");
-      $("#input").animate({ opacity: 1 }, TRANSITION);
-    });
-  })
+  $("#singif-go").click(singifButtonPressed);
+  $("#query").keyup(function(event){
+    // enter key:
+    if(event.keyCode == 13) singifButtonPressed();
+  });
 }); // end upon DOM having loaded
 
-function singif(cb) {
-  if (debug) console.log("starting singif process");
+function singifButtonPressed() {
+  var button = $(this);
+  if (button.hasClass("pressed")) return;
+  button.addClass("pressed"); // to avoid a flicker when you let go
+  $("#input").delay(TRANSITION/2).animate({ opacity: 0 }, TRANSITION);
+  $("#message").delay(TRANSITION/2).fadeOut(TRANSITION); // hide any error message
+  $("#singif").css({display: "inline-block"});
 
+  singif($("#query").val(), singifFinished);
+}
+
+function resetSingif() {
   // reset containers in case we've already played something
   $("#gifs").html("<div class='gif'></div><div class='lyric'></div>"); // dummies to make JS easier
   // also reset #yt
   timers = [] // clear timers
+}
 
-  // set loading icon
-  
-  getSingif("some parameters", function getSingifCB(resp){
+function setLoading() {
+  // TODO
+}
+function unsetLoading() {
+  // TODO
+}
 
+function singifFinished() {
+  button.removeClass("pressed");
+  button.html("let's do it again");
+  $("#input").animate({ opacity: 1 }, TRANSITION);
+}
+
+
+// ========== SINGIF PREPARATION LOGIC ========== //
+
+function singif(query, cb) {
+  if (debug) console.log("starting singif process");
+
+  resetSingif();
+
+  setLoading();
+
+  getSingifJSON(query, function getSingifCB(resp){
     if (resp.error) {
       var errorMessage = "Problem fetching singif. Status code " + resp.status + ", error code " + resp.error.code + ": " + resp.error.mesg; // default error message
       console.log(errorMessage);
@@ -52,19 +76,17 @@ function singif(cb) {
       $("#message").html(errorMessage).fadeIn(TRANSITION);
       cb(); // unhides search bar etc
     }
-
     else {
       singifDfd.resolve(resp, cb); // resolve this - YT player will start to load and then setupSingifTimers() will be called
 
       // TODO: start buffering gifs
     }
   });
-
 }
 
-function getSingif(param1, cb) {
+function getSingifJSON(query, cb) {
   // var url = SINGIF_API_URL + "?song_name=" + encodeURIComponent($("#query").val()) + "&song_lyrics=" + encodeURIComponent(EUGENE);
-  var url = SINGIF_API_URL + "?song_name=" + encodeURIComponent($("#query").val());
+  var url = SINGIF_API_URL + "?song_name=" + encodeURIComponent(query);
   $.getJSON(url, function(resp) {
     if (debug) {
       console.log("singif JSON loaded. response:");
@@ -73,6 +95,9 @@ function getSingif(param1, cb) {
     cb(resp);
   });
 }
+
+
+// ========== YOUTUBE HOOKS AND SHIT ========== //
 
 // returns a Deferred we can pass to $.when() that will resolve when the YT iframe API calls onYouTubeIframeAPIReady()
 function loadYouTubeAPI(){
@@ -103,7 +128,7 @@ $.when(singifDfd, loadYouTubeAPI()).done(function(singifArgs) {
   player = new YT.Player('player', {
     width: '320',
     height: '240',
-    videoId: '6okxuiiHx2w',
+    videoId: resp.meta.id,
     playerVars: {
       'autohide': 1,
       'rel': 0, // don't show related videos when video done. TODO: could add this later, and do a singif for whatever they click on
@@ -120,6 +145,7 @@ $.when(singifDfd, loadYouTubeAPI()).done(function(singifArgs) {
     if (debug) console.log("YT player ready");
     setupSingifTimers(resp);
     event.target.playVideo(); // autostart playing
+    unsetLoading();
   }
 
   // API calls this function when the player's state changes.
@@ -138,7 +164,8 @@ $.when(singifDfd, loadYouTubeAPI()).done(function(singifArgs) {
     }
   }
 
-});
+}); // end $.when()
+
 
 // ========== TIMING STUFF ========== //
 

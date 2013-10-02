@@ -4,6 +4,8 @@ var TRANSITION = 250;
 var SINGIF_API_URL = "http://api.singif.com/api/v1/singif";
 var debug = true;
 
+var EUGENE = "Studies have shown that we like sheep are prone \nTo sure fatal doses of malcontent through osmosis \nBut don't be sympathetic, just pass the anaesthetic \n'Cuz sheep are benign and on the young we will dine \nBurn her pale blue shroud, and tread on her bones \nThe din of the boys club crowd, reveals we've always been clones \nOh this being true you know there's more than just two \nIn the cards are four aces so turn and shoot at twelve paces \nStudies have shown that we like sheep are prone \nTo sure fatal doses of malcontent through osmosis \nBut don't be sympathetic, just pass the antisthetic \n'Cuz sheep are benign and on the young we will dine \nBurn her pale blue shroud, and tread on her bones \nThe din of the boys club crowd, reveals we've always been clones \nOh this being true you know there's more than just two \nSo tie up your laces for the gene pool race of races;"
+
 var player; // global variable for YouTube player
 
 // Deferreds, used in $.when() below
@@ -11,12 +13,13 @@ var singifDfd = $.Deferred(); // resolves when user starts a singif and we recei
 var youtubeDfd = $.Deferred(); // resolves when YT API is ready
 
 $(function() { // upon DOM having loaded
-  $("#singif").click(function() {
+  $("#singif-go").click(function() {
     var button = $(this);
     if (button.hasClass("pressed")) return;
     button.addClass("pressed"); // to avoid a flicker when you let go
     $("#input").delay(TRANSITION/2).animate({ opacity: 0 }, TRANSITION);
-    $("#drivein").css({display: "inline-block"});
+    $("#message").delay(TRANSITION/2).fadeOut(TRANSITION); // hide any error message
+    $("#singif").css({display: "inline-block"});
     singif(function singifCB() {
       // when singif is done playing
       button.removeClass("pressed");
@@ -36,18 +39,28 @@ function singif(cb) {
   // set loading icon
   
   getSingif("some parameters", function getSingifCB(resp){
-    if (resp.status != 200) {
-      console.error("Something broke. Status code " + resp.status + ": " + resp.mesg);
+
+    if (resp.error) {
+      var errorMessage = "Problem fetching singif. Status code " + resp.status + ", error code " + resp.error.code + ": " + resp.error.mesg; // default error message
+      console.log(errorMessage);
+      if (resp.error.code == 101) { // song not found
+        errorMessage = "Song could not be found - try searching for something else!";
+      }
+      $("#message").html(errorMessage).fadeIn(TRANSITION);
+      cb(); // unhides search bar etc
     }
+    
     else {
-      singifDfd.resolve(resp, cb);
+      singifDfd.resolve(resp, cb); // resolve this - YT player will start to load and then playSingif() will be called
 
       // TODO: start buffering gifs
     }
   });
+
 }
 
 function getSingif(param1, cb) {
+  // var url = SINGIF_API_URL + "?song_name=" + encodeURIComponent($("#query").val()) + "&song_lyrics=" + encodeURIComponent(EUGENE);
   var url = SINGIF_API_URL + "?song_name=" + encodeURIComponent($("#query").val());
   $.getJSON(url, function(resp) {
     if (debug) {
@@ -58,10 +71,8 @@ function getSingif(param1, cb) {
   });
 }
 
-// ========= youtube shit ========= //
-
 // returns a Deferred we can pass to $.when() that will resolve when the YT iframe API calls onYouTubeIframeAPIReady()
-function loadYTapi(){
+function loadYouTubeAPI(){
   var dfd = $.Deferred();
 
   window.onYouTubeIframeAPIReady = function() {
@@ -78,8 +89,8 @@ function loadYTapi(){
   return dfd;
 }
 
-// when singif JSON and youtube API loaded
-$.when(singifDfd, loadYTapi()).done(function(singifArgs) {
+// when singif JSON and youtube API are both loaded
+$.when(singifDfd, loadYouTubeAPI()).done(function(singifArgs) {
   var resp = singifArgs[0]; // JSON response containing singif
   var cb = singifArgs[1] // for when youtube video stops playing
 
@@ -115,9 +126,6 @@ $.when(singifDfd, loadYTapi()).done(function(singifArgs) {
       cb();
     }
   }
-  // function stopVideo() {
-  //   player.stopVideo();
-  // }
 
 });
 
@@ -132,7 +140,7 @@ function playSingif(resp) {
       $($("#gifs .gif")[0]).fadeOut(TRANSITION, function() {
         $(this).remove();
       });
-    }, gif.ts*750);
+    }, gif.ts*1000);
   });
 
   // schedule lyrics
@@ -143,6 +151,6 @@ function playSingif(resp) {
       $($("#gifs .lyric")[0]).fadeOut(TRANSITION, function() {
         $(this).remove();
       });
-    }, line.ts*750);
+    }, line.ts*1000);
   });
 }
